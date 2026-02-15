@@ -7,9 +7,10 @@ export default defineConfig({
     ],
     server: {
         proxy: {
-            '/api': {
-                target: 'https://api.muapi.ai',
+            '/gemini-api': {
+                target: 'https://generativelanguage.googleapis.com',
                 changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/gemini-api/, ''),
                 secure: false
             }
         }

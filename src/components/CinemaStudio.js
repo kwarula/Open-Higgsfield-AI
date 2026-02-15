@@ -1,5 +1,5 @@
 
-import { muapi } from '../lib/muapi.js';
+import { gemini } from '../lib/gemini.js';
 import { CameraControls } from './CameraControls.js';
 import { buildNanoBananaPrompt, CAMERA_MAP, LENS_MAP } from '../lib/promptUtils.js';
 import { AuthModal } from './AuthModal.js';
@@ -19,15 +19,16 @@ export function CinemaStudio() {
     };
 
     // ==========================================
-    // 1. HERO SECTION (Empty State)
+    // 1. HERO SECTION
     // ==========================================
     const heroSection = document.createElement('div');
     heroSection.className = 'flex flex-col items-center justify-center text-center px-4 animate-fade-in-up';
     heroSection.innerHTML = `
-        <div class="mb-4 text-xs font-bold text-white/40 tracking-[0.2em] uppercase">Cinema Studio 2.0</div>
+        <div class="mb-4 text-xs font-bold text-white/40 tracking-[0.2em] uppercase">Cinema Studio 2.1</div>
         <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tight leading-tight mb-2">
             What would you shoot<br>with infinite budget?
         </h1>
+        <p class="text-white/30 text-sm mt-4 font-mono">POWERED BY GEMINI 3 PRO</p>
     `;
     container.appendChild(heroSection);
 
@@ -38,7 +39,6 @@ export function CinemaStudio() {
     overlayBackdrop.className = 'fixed inset-0 bg-black/80 backdrop-blur-md z-40 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center';
 
     const overlayContent = document.createElement('div');
-    // Reduced padding for mobile (p-4) and added max-height/overflow handling
     overlayContent.className = 'w-full max-w-4xl bg-[#141414] border border-white/10 rounded-3xl p-4 md:p-8 shadow-2xl transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]';
     overlayBackdrop.appendChild(overlayContent);
 
@@ -65,7 +65,7 @@ export function CinemaStudio() {
     });
     overlayContent.appendChild(cameraControls);
 
-    document.body.appendChild(overlayBackdrop); // Append to body to sit above everything
+    document.body.appendChild(overlayBackdrop);
 
     // Overlay Logic
     const openOverlay = () => {
@@ -99,8 +99,6 @@ export function CinemaStudio() {
     const inputRow = document.createElement('div');
     inputRow.className = 'flex items-start gap-3 w-full';
 
-
-
     // Textarea
     const textarea = document.createElement('textarea');
     textarea.placeholder = 'Describe your scene - use @ to add characters & props';
@@ -112,13 +110,11 @@ export function CinemaStudio() {
         this.style.height = (this.scrollHeight) + 'px';
     };
     inputRow.appendChild(textarea);
-
     leftColumn.appendChild(inputRow);
 
     // 2. Settings Toolbar (Bottom Left)
-    // 2. Settings Toolbar (Bottom Left)
     const settingsToolbar = document.createElement('div');
-    settingsToolbar.className = 'flex items-center gap-3'; // Removed pl-11 to align left
+    settingsToolbar.className = 'flex items-center gap-3';
 
     // Helper: Create Dropdown
     const createDropdown = (items, selected, onSelect, trigger) => {
@@ -189,9 +185,8 @@ export function CinemaStudio() {
     const rightGroup = document.createElement('div');
     rightGroup.className = 'flex items-center gap-2 h-full self-end mb-1';
 
-    // Summary Card (Triggers Overlay)
+    // Summary Card
     const summaryCard = document.createElement('button');
-    // Removed 'hidden' class, added 'flex' and refined width constraints for mobile
     summaryCard.className = 'flex flex-col items-start justify-center px-4 py-2 bg-[#2a2a2a] rounded-xl border border-white/5 hover:border-white/20 transition-colors text-left flex-1 min-w-[100px] md:min-w-[140px] max-w-[240px] h-[56px] relative group overflow-hidden';
 
     // Dot indicator
@@ -239,9 +234,9 @@ export function CinemaStudio() {
     // ==========================================
     const generationHistory = [];
 
-    // History Sidebar - VISIBLE BY DEFAULT (removed translate-x-full opacity-0)
     const historySidebar = document.createElement('div');
-    historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500';
+    // Default hidden off-screen
+    historySidebar.className = 'fixed right-0 top-0 h-full w-20 md:w-24 bg-black/60 backdrop-blur-xl border-l border-white/5 z-50 flex flex-col items-center py-4 gap-3 overflow-y-auto transition-all duration-500 translate-x-full opacity-0';
 
     const historyLabel = document.createElement('div');
     historyLabel.className = 'text-[9px] font-bold text-white/40 uppercase tracking-widest mb-2';
@@ -313,8 +308,11 @@ export function CinemaStudio() {
 
     const addToHistory = (entry) => {
         generationHistory.unshift(entry);
-        localStorage.setItem('cinema_history', JSON.stringify(generationHistory.slice(0, 50)));
         renderHistory();
+
+        // Show Sidebar
+        historySidebar.classList.remove('translate-x-full', 'opacity-0');
+        historySidebar.classList.add('translate-x-0', 'opacity-100');
     };
 
     const loadHistoryItem = (entry, thumbElement) => {
@@ -326,7 +324,7 @@ export function CinemaStudio() {
             currentSettings.aperture = entry.settings.aperture;
             currentSettings.aspect_ratio = entry.settings.aspect_ratio;
 
-            // Update UI elements
+            // Update UI
             textarea.value = entry.settings.prompt || '';
             updateSummaryCard();
             updateArBtn();
@@ -335,7 +333,7 @@ export function CinemaStudio() {
 
         showCanvas(entry.url);
 
-        // Highlight active history item
+        // Highlight
         if (thumbElement) {
             historyList.querySelectorAll('div').forEach(t => {
                 t.classList.remove('border-[#d9ff00]', 'shadow-glow-sm');
@@ -348,12 +346,9 @@ export function CinemaStudio() {
 
     const showCanvas = (url) => {
         resultImg.src = url;
-
-        // Hide Input UI
         heroSection.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
         promptBarWrapper.classList.add('opacity-0', 'pointer-events-none', 'translate-y-20');
 
-        // Show Canvas
         canvas.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-10', 'scale-95');
         canvas.classList.add('opacity-100', 'translate-y-0', 'scale-100');
         canvasControls.classList.remove('opacity-0');
@@ -361,27 +356,15 @@ export function CinemaStudio() {
     };
 
     const resetToPrompt = () => {
-        // Hide Canvas
         canvas.classList.add('opacity-0', 'pointer-events-none', 'translate-y-10', 'scale-95');
         canvas.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
 
-        // Show Input UI
         heroSection.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
         promptBarWrapper.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-20');
 
-        // Clear prompt for new shot?
         textarea.value = '';
         textarea.focus();
     };
-
-    // Load saved history
-    try {
-        const saved = JSON.parse(localStorage.getItem('cinema_history') || '[]');
-        if (saved.length > 0) {
-            saved.forEach(e => generationHistory.push(e));
-            renderHistory();
-        }
-    } catch (e) { }
 
     // Actions
     newPromptBtn.onclick = resetToPrompt;
@@ -394,19 +377,13 @@ export function CinemaStudio() {
     };
 
     downloadBtn.onclick = async () => {
-        try {
-            const response = await fetch(resultImg.src);
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
+        if (resultImg.src) {
             const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = `cinema-shot-${Date.now()}.jpg`;
+            a.href = resultImg.src;
+            a.download = `cinema-shot-${Date.now()}.png`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-        } catch (err) {
-            window.open(resultImg.src, '_blank');
         }
     };
 
@@ -417,7 +394,7 @@ export function CinemaStudio() {
         const basePrompt = textarea.value.trim();
         if (!basePrompt) return;
 
-        const apiKey = localStorage.getItem('muapi_key');
+        const apiKey = localStorage.getItem('gemini_api_key');
         if (!apiKey) {
             AuthModal(() => generateBtn.click());
             return;
@@ -426,7 +403,7 @@ export function CinemaStudio() {
         generateBtn.disabled = true;
         generateBtn.innerHTML = "SHOOTING...";
 
-        // Compile Prompt
+        // Compile Cinematic Prompt
         const finalPrompt = buildNanoBananaPrompt(
             basePrompt,
             currentSettings.camera,
@@ -436,12 +413,11 @@ export function CinemaStudio() {
         );
 
         try {
-            const res = await muapi.generateImage({
-                model: 'nano-banana-pro',
+            const res = await gemini.generateImage({
+                model: 'gemini-3-pro-image-preview', // Force Nano Banana Pro for Cinema
                 prompt: finalPrompt,
                 aspect_ratio: currentSettings.aspect_ratio,
-                resolution: (resBtn.dataset.value || '1k').toLowerCase(),
-                negative_prompt: "blurry, low quality, distortion, bad composition"
+                image_size: resBtn.dataset.value
             });
 
             if (res && res.url) {
@@ -463,7 +439,7 @@ export function CinemaStudio() {
 
         } catch (e) {
             console.error(e);
-            alert('Generation Failed: ' + e.message);
+            alert('Shot Failed: ' + e.message);
         } finally {
             generateBtn.disabled = false;
             generateBtn.innerHTML = `GENERATE ✨`;

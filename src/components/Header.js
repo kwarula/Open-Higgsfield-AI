@@ -72,7 +72,7 @@ export function Header(navigate) {
         </svg>
     `;
     keyBtn.onclick = () => {
-        localStorage.removeItem('muapi_key');
+        localStorage.removeItem('gemini_api_key');
         window.location.reload();
     };
 
