@@ -1,4 +1,4 @@
-# Open Higgsfield AI
+# VibeGen
 
 An open-source AI image generation studio powered by [Muapi.ai](https://muapi.ai). Generate stunning images using state-of-the-art models like Flux Schnell, Flux Dev, Nano Banana Pro, and more — all from a sleek, modern interface.
 
@@ -39,7 +39,7 @@ The **Cinema Studio** offers precise control over the virtual camera, translatin
 ```bash
 # Clone the repository
 git clone https://github.com/Anil-matcha/Open-Higgsfield-AI.git
-cd Open-Higgsfield-AI
+cd VibeGen
 
 # Install dependencies
 npm install
